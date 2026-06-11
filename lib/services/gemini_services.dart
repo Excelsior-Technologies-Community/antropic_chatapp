@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'toolmanager.dart';
 
 class GeminiService {
-  static const String apiKey = 'AQ.Ab8RN6KjSFn9BIHVeVG4kHKx9jpskA0eIdYfiXmHZrmk0BIcag';
+  static const String apiKey = 'AIzaSyDTVSgr5H6JHsXroqZEZnN12FAtqd3qRlQ';
 
   // =========================
   // CHAT WITH CONFIG + TOOLS
@@ -22,8 +22,8 @@ class GeminiService {
       }
 
     final url = Uri.parse(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey',
-  );
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey',
+);
 
       // SAFE BODY BUILD (prevents 400 errors)
       final body = {
