@@ -20,12 +20,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
   @override
   void initState() {
     super.initState();
-
     timer = Timer.periodic(
       const Duration(seconds: 1),
       (_) {
         reminderService.checkReminders(messages);
-
         if (mounted) {
           setState(() {});
         }
@@ -35,31 +33,24 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
   void sendMessage() {
     final text = controller.text.trim();
-
     if (text.isEmpty) return;
-
     setState(() {
       messages.add({
         "text": text,
         "isUser": true,
       });
     });
-
     controller.clear();
-
     if (text.toLowerCase().contains("remind")) {
       reminderService.addReminder(text);
-
       setState(() {
         messages.add({
           "text": "⏰ Reminder created successfully.",
           "isUser": false,
         });
       });
-
       return;
     }
-
     setState(() {
       messages.add({
         "text": "Tool not found.",
@@ -70,9 +61,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
   void showReminders() {
     reminderService.markAllTriggeredAsSeen();
-
     setState(() {});
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -83,7 +72,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
       ),
       builder: (_) {
         final reminders = reminderService.reminders;
-
         if (reminders.isEmpty) {
           return const SizedBox(
             height: 250,
@@ -101,7 +89,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
           child: Column(
             children: [
               const SizedBox(height: 12),
-
               Container(
                 width: 50,
                 height: 5,
@@ -110,9 +97,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-
               const SizedBox(height: 15),
-
               const Text(
                 "Reminders",
                 style: TextStyle(
@@ -120,15 +105,12 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const Divider(),
-
               Expanded(
                 child: ListView.builder(
                   itemCount: reminders.length,
                   itemBuilder: (context, index) {
                     final reminder = reminders[index];
-
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: reminder.isTriggered
@@ -149,9 +131,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       ),
                       trailing: Chip(
                         label: Text(
-                          reminder.isTriggered
-                              ? "Completed"
-                              : "Pending",
+                          reminder.isTriggered? "Completed" : "Pending",
                         ),
                       ),
                     );
@@ -243,7 +223,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 }
 
                 final msg = messages[index - 1];
-
                 return Align(
                   alignment: msg["isUser"]
                       ? Alignment.centerRight

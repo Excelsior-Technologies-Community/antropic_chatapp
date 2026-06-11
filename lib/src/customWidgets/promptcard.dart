@@ -32,6 +32,6 @@ class _PromptCardState extends State<PromptCard> {
           ),
         ),
       ),
-    );;
+    );
   }
 }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:chatapp/src/customWidgets/fillbutton.dart';
+import 'package:chatapp/src/customWidgets/profilefeild.dart';
 import 'package:flutter/material.dart';
 
 class PromptEvaluationScreen extends StatefulWidget {
@@ -15,10 +17,6 @@ class _PromptEvaluationScreenState
 
   Map<String, dynamic>? extractedData;
   bool isLoading = false;
-
-  // =========================
-  // EXTRACT FUNCTION
-  // =========================
   Future<void> extractJson() async {
     final text = controller.text.trim();
     if (text.isEmpty) return;
@@ -44,9 +42,6 @@ class _PromptEvaluationScreenState
     });
   }
 
-  // =========================
-  // HELPERS
-  // =========================
   String _findEmail(String text) {
     final regex = RegExp(r'[\w\.-]+@[\w\.-]+\.\w+');
     return regex.firstMatch(text)?.group(0) ?? "Not found";
@@ -100,17 +95,13 @@ class _PromptEvaluationScreenState
     super.dispose();
   }
 
-  // =========================
-  // UI
-  // =========================
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "AI JSON Extractor",
+        title: const Text("AI JSON Extractor",
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
         ),
         centerTitle: true,
@@ -124,7 +115,6 @@ class _PromptEvaluationScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // INPUT
               TextField(
                 controller: controller,
                 maxLines: 5,
@@ -147,22 +137,9 @@ class _PromptEvaluationScreenState
               ),
               const SizedBox(height: 16),
 
-              // BUTTON
-              FilledButton(
-                onPressed: isLoading ? null : extractJson,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "Extract Data",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 24),
+              CustomFillButton(onPressed: isLoading? null : extractJson, title: "Extract Data"),
 
+              const SizedBox(height: 24),
               if (isLoading)
                 const Center(
                   child: Padding(
@@ -171,7 +148,6 @@ class _PromptEvaluationScreenState
                   ),
                 ),
 
-              // ================= RESULTS CONTENT =================
               if (extractedData != null) ...[
                 Text(
                   "Extracted Profile",
@@ -184,7 +160,6 @@ class _PromptEvaluationScreenState
                 ),
                 const SizedBox(height: 8),
 
-                // PROFILE CARD
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -197,14 +172,13 @@ class _PromptEvaluationScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildProfileField("Name", extractedData!['name'], Icons.person_outline),
+                        ProfileFeild(label:"Name", value: extractedData!['name'], icon: Icons.person_outline),
                         const Divider(height: 24, thickness: 0.8),
-                        _buildProfileField("Email", extractedData!['email'], Icons.mail_outline),
+                        ProfileFeild(label: "Email", value: extractedData!['email'], icon:Icons.mail_outline),
                         const Divider(height: 24, thickness: 0.8),
-                        _buildProfileField("Role", extractedData!['role'], Icons.work_outline),
+                        ProfileFeild(label:"Role", value:extractedData!['role'], icon:Icons.work_outline),
                         const Divider(height: 24, thickness: 0.8),
 
-                        // SENTIMENT BADGE
                         Row(
                           children: [
                             Icon(Icons.emoji_emotions_outlined, size: 20, color: Colors.grey.shade600),
@@ -239,7 +213,6 @@ class _PromptEvaluationScreenState
                         ),
                         const Divider(height: 24, thickness: 0.8),
 
-                        // CONFIDENCE BAR
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -283,7 +256,6 @@ class _PromptEvaluationScreenState
                 ),
                 const SizedBox(height: 24),
 
-                // RAW JSON
                 Text(
                   "Raw JSON Response",
                   style: TextStyle(
@@ -321,25 +293,6 @@ class _PromptEvaluationScreenState
           ),
         ),
       ),
-    );
-  }
-
-  // Concise custom row builder helper for the profile layout
-  Widget _buildProfileField(String label, String value, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey.shade600),
-        const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
-      ],
     );
   }
 }

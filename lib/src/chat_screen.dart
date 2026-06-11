@@ -71,9 +71,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // =========================
-  // 💬 USER + AI MESSAGE UI (IMPROVED)
-  // =========================
   Widget buildMessage(ChatMessageModel msg) {
     final isUser = msg.isUser;
 
@@ -199,7 +196,6 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-
       appBar: AppBar(
         title: const Text("AI Chat Config"),
         elevation: 0,
@@ -211,7 +207,6 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             buildConfigCard(),
-
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
