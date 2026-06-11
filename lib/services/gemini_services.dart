@@ -5,9 +5,6 @@ import 'toolmanager.dart';
 class GeminiService {
   static const String apiKey = 'AIzaSyDTVSgr5H6JHsXroqZEZnN12FAtqd3qRlQ';
 
-  // =========================
-  // CHAT WITH CONFIG + TOOLS
-  // =========================
   Future<String> sendMessage(
     String message, {
     String? systemPrompt,
@@ -15,7 +12,6 @@ class GeminiService {
     int maxTokens = 1024,
   }) async {
     try {
-      // TOOL FIRST (local execution)
       final toolResult = ToolManager.execute(message);
       if (toolResult != null) {
         return toolResult.response;
@@ -25,7 +21,6 @@ class GeminiService {
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey',
 );
 
-      // SAFE BODY BUILD (prevents 400 errors)
       final body = {
         "contents": [
           {
@@ -41,7 +36,6 @@ class GeminiService {
         }
       };
 
-      // system prompt optional add
       if (systemPrompt != null && systemPrompt.trim().isNotEmpty) {
         body["systemInstruction"] = {
           "parts": [
@@ -72,9 +66,7 @@ class GeminiService {
     }
   }
 
-  // =========================
-  // PROMPT EVALUATION (SEPARATE MODE)
-  // =========================
+
   Future<String> evaluatePrompt({
     required String systemPrompt,
     required String userPrompt,

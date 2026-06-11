@@ -5,7 +5,6 @@ class ToolManager {
   static ToolResult? execute(String msg) {
     final text = msg.toLowerCase();
 
-    // TIME TOOL
     if (text.contains("time") ||
         text.contains("current time") ||
         text.contains("what time")) {
@@ -15,7 +14,6 @@ class ToolManager {
       );
     }
 
-    // WEATHER TOOL (mock)
     if (text.contains("weather")) {
       return ToolResult(
         handled: true,
@@ -24,14 +22,11 @@ class ToolManager {
       );
     }
 
-    // CALCULATOR TOOL (simple)
-    if (RegExp(r'^\d+\s*[\+\-\*\/]\s*\d+$')
-        .hasMatch(text)) {
+    if (RegExp(r'^\d+\s*[\+\-\*\/]\s*\d+$').hasMatch(text)) {
       try {
         final parts = text.split(RegExp(r'[\+\-\*\/]'));
         final a = double.parse(parts[0].trim());
         final b = double.parse(parts[1].trim());
-
         double result = 0;
 
         if (text.contains("+")) result = a + b;
@@ -50,7 +45,6 @@ class ToolManager {
         );
       }
     }
-
     return null;
   }
 }

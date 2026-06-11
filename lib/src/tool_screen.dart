@@ -1,19 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-
-class ReminderModel {
-  final String title;
-  final DateTime reminderTime;
-  bool isTriggered;
-  bool isSeen;
-
-  ReminderModel({
-    required this.title,
-    required this.reminderTime,
-    this.isTriggered = false,
-    this.isSeen = false,
-  });
-}
+import 'package:chatapp/services/reminderservices.dart';
+import 'package:chatapp/src/customWidgets/promptcard.dart';
 
 class ToolsScreen extends StatefulWidget {
   const ToolsScreen({super.key});
@@ -24,10 +13,8 @@ class ToolsScreen extends StatefulWidget {
 
 class _ToolsScreenState extends State<ToolsScreen> {
   final TextEditingController controller = TextEditingController();
-
   final List<Map<String, dynamic>> messages = [];
-  final List<ReminderModel> reminders = [];
-
+  final ReminderService reminderService = ReminderService();
   Timer? timer;
 
   @override
@@ -36,89 +23,36 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     timer = Timer.periodic(
       const Duration(seconds: 1),
-      (_) => checkReminders(),
-    );
-  }
+      (_) {
+        reminderService.checkReminders(messages);
 
-  Widget _buildPromptCard(String text) {
-    return GestureDetector(
-      onTap: () {
-        controller.text = text;
-        setState(() {});
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.blue.shade300),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void checkReminders() {
-    final now = DateTime.now();
-
-    for (final r in reminders) {
-      if (!r.isTriggered && now.isAfter(r.reminderTime)) {
-        r.isTriggered = true;
-
-        if (!messages.any((m) => m["text"] == "🔔 Reminder: ${r.title}")) {
-          messages.add({
-            "text": "🔔 Reminder: ${r.title}",
-            "isUser": false,
-          });
+        if (mounted) {
+          setState(() {});
         }
-      }
-    }
-
-    setState(() {});
-  }
-
-  int get badgeCount =>
-      reminders.where((r) => r.isTriggered && !r.isSeen).length;
-
-  int extractMinutes(String text) {
-    final regex = RegExp(r'(\d+)\s*(minute|min|minutes)');
-    final match = regex.firstMatch(text.toLowerCase());
-
-    if (match != null) {
-      return int.parse(match.group(1)!);
-    }
-    return 1;
+      },
+    );
   }
 
   void sendMessage() {
     final text = controller.text.trim();
+
     if (text.isEmpty) return;
 
     setState(() {
-      messages.add({"text": text, "isUser": true});
+      messages.add({
+        "text": text,
+        "isUser": true,
+      });
     });
 
     controller.clear();
 
     if (text.toLowerCase().contains("remind")) {
-      final minutes = extractMinutes(text);
-
-      reminders.add(
-        ReminderModel(
-          title: text,
-          reminderTime: DateTime.now().add(Duration(minutes: minutes)),
-        ),
-      );
+      reminderService.addReminder(text);
 
       setState(() {
         messages.add({
-          "text": "⏰ Reminder set for $minutes minute(s).",
+          "text": "⏰ Reminder created successfully.",
           "isUser": false,
         });
       });
@@ -135,30 +69,98 @@ class _ToolsScreenState extends State<ToolsScreen> {
   }
 
   void showReminders() {
-    for (final r in reminders) {
-      r.isSeen = true;
-    }
+    reminderService.markAllTriggeredAsSeen();
 
     setState(() {});
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
       builder: (_) {
-        final list = reminders.where((r) => r.isTriggered).toList();
+        final reminders = reminderService.reminders;
 
-        return list.isEmpty
-            ? const Center(child: Text("No reminders"))
-            : ListView(
-                children: list.map((r) {
-                  return ListTile(
-                    leading: const Icon(Icons.notifications_active),
-                    title: Text(r.title),
-                    subtitle: Text(
-                      "Time: ${r.reminderTime}\nSeen: ${r.isSeen}",
-                    ),
-                  );
-                }).toList(),
-              );
+        if (reminders.isEmpty) {
+          return const SizedBox(
+            height: 250,
+            child: Center(
+              child: Text(
+                "No reminders",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * .6,
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              const Text(
+                "Reminders",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const Divider(),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: reminders.length,
+                  itemBuilder: (context, index) {
+                    final reminder = reminders[index];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: reminder.isTriggered
+                            ? Colors.green.shade100
+                            : Colors.orange.shade100,
+                        child: Icon(
+                          reminder.isTriggered
+                              ? Icons.notifications_active
+                              : Icons.schedule,
+                          color: reminder.isTriggered
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      ),
+                      title: Text(reminder.title),
+                      subtitle: Text(
+                        "Due: ${reminder.reminderTime}",
+                      ),
+                      trailing: Chip(
+                        label: Text(
+                          reminder.isTriggered
+                              ? "Completed"
+                              : "Pending",
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
@@ -182,7 +184,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 icon: const Icon(Icons.notifications),
                 onPressed: showReminders,
               ),
-              if (badgeCount > 0)
+              if (reminderService.badgeCount > 0)
                 Positioned(
                   right: 6,
                   top: 6,
@@ -193,7 +195,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Text(
-                      badgeCount.toString(),
+                      reminderService.badgeCount.toString(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -202,31 +204,38 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   ),
                 ),
             ],
-          )
+          ),
         ],
       ),
-
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 10, bottom: 10),
+              padding: const EdgeInsets.only(
+                top: 10,
+                bottom: 10,
+              ),
               itemCount: messages.length + 1,
               itemBuilder: (context, index) {
-
-                // ✅ PROMPTS INSIDE CHAT (TOP SECTION)
                 if (index == 0) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildPromptCard("Remind me in 10 minutes"),
+                          PromptCard(
+                            text: "Remind me in 10 To Push Code",
+                            controller: controller,
+                          ),
                           const SizedBox(width: 10),
-                          _buildPromptCard("Remind me to call after 5 min"),
-                          const SizedBox(width: 10),
-                          _buildPromptCard("Remind me tomorrow"),
+                          PromptCard(
+                            text: "Remind me to call after 5 min",
+                            controller: controller,
+                          ),
                         ],
                       ),
                     ),
@@ -241,7 +250,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: msg["isUser"]
@@ -275,6 +286,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         hintText: "Ask a tool...",
                         border: OutlineInputBorder(),
                       ),
+                      onSubmitted: (_) => sendMessage(),
                     ),
                   ),
                   const SizedBox(width: 8),

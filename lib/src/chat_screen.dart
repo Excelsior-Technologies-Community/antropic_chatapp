@@ -11,8 +11,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController controller = TextEditingController();
-  final TextEditingController systemPromptController =
-      TextEditingController();
+  final TextEditingController systemPromptController = TextEditingController();
 
   final ScrollController scrollController = ScrollController();
 
@@ -122,9 +121,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // =========================
-  // ⚙ CONFIG CARD UI (IMPROVED)
-  // =========================
   Widget buildConfigCard() {
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -199,9 +195,6 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  // =========================
-  // 🧠 MAIN UI
-  // =========================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,9 +229,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: CircularProgressIndicator(),
               ),
 
-            // =========================
-            // INPUT BAR (MODERN UI)
-            // =========================
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
